@@ -1,5 +1,4 @@
 import os 
-from constants import MAX_CHARS
 
 
 def get_file_content(working_directory, file_path):
@@ -12,6 +11,7 @@ def get_file_content(working_directory, file_path):
         if not os.path.isfile(cmp_fpath):
             return f'Error: File not found or is not a regular file: "{file_path}"'
         else:
+            MAX_CHARS = 10000
             with open(cmp_fpath, "r") as f:
                 file_content_string = f.read(MAX_CHARS)
                 if len(file_content_string) == MAX_CHARS:
