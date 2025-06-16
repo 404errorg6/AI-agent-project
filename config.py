@@ -12,6 +12,11 @@ When a user asks a question or makes a request, make a function call plan. You c
 - Write or overwrite files
 
 All paths you provide should be relative to the working directory. You do not need to specify the working directory in your function calls as it is automatically injected for security reasons.
+Always look for related files in current and its subdirectories using functions according to prompt.
+Try to look for bugs in code, its related files and fix them instead of troubling user to enter input in specific way.
+Look at func, var names etc in code to get a better understanding of what it does.
+Take time if you need to but fix the problem correctly and use as less functioncalls as possibe bcz 20 functioncalls is the limit.
+Run the file with bugged input after writing to it to check whether its fixed or not.
 """
 schema_get_files_info = types.FunctionDeclaration(
     name="get_files_info",

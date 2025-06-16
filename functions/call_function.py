@@ -19,7 +19,7 @@ def call_function(function_call_part, verbose=False):
     else:
         print(f" - Calling function: {function_name}")
 
-    function_result = funcs[function_name]("./calculator", **function_call_part.args)
+    function_result = funcs[function_name](working_directory="./calculator", **function_call_part.args)
     if function_name not in funcs:
         return types.Content(
             role="tool",

@@ -15,37 +15,7 @@ def verbose_checker():
           return "--verbose" in sys.argv
     except IndexError:
          return 0
-
-def generate_content(client, messages, verbose):
-    
-    response = client.models.generate_content(
-        model="gemini-2.0-flash-001",
-        contents=messages,
-        config=types.GenerateContentConfig(
-            tools=[available_functions], system_instruction=system_prompt
-        ),
-    )
-    
-    if not response.function_calls:
-        print(response.text)
-
-    function_responses = []
-    for function_call_part in response.function_calls:
-        function_call_result = call_function(function_call_part=function_call_part, verbose=verbose)
-        if (not function_call_result.parts or function_call_result.parts[0].function_response):
-             raise Exception("Result of empty function call")
-        if verbose:
-            print(f"-> {function_call_result.parts[0].function_response.response}")
-        function_responses.append(function_call_part.parts[0])
-    if not function_responses:
-        raise Exception("no function responses generated, exiting")
-
-    if verbose:
-        print("Prompt tokens:", response.usage_metadata.prompt_token_count)
-        print("Response tokens:", response.usage_metadata.candidates_token_count)
-
-
-
+            
 def main():
         
     load_dotenv()
@@ -69,7 +39,40 @@ def main():
 
     generate_content(client, messages, verbose_checker())
 
+def generate_content(client, messages, verbose):
+    i = 0
+    while i < 20:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash-001",
+            contents=messages,
+            config=types.GenerateContentConfig(
+                tools=[available_functions], system_instruction=system_prompt
+            ),
+        )
+        function_called = bool(response.function_calls)
+        for candidate in response.candidates:
+            messages.append(candidate.content)
+        if not function_called:
+            print(response.text)
+            sys.exit()
+        else:
+            function_responses = []
+            for function_call_part in response.function_calls:
+                function_call_result = call_function(function_call_part=function_call_part, verbose=verbose)
+                messages.append(function_call_result)
+                if (not function_call_result.parts or not function_call_result.parts[0].function_response):
+                    raise Exception("Result of empty function call")
+                if verbose:
+                    print(f"-> {function_call_result.parts[0].function_response.response}")
+                function_responses.append(function_call_result.parts[0])
+            i += 1
+            continue
+        if not function_responses:
+            raise Exception("no function responses generated, exiting")
 
+        if verbose:
+            print("Prompt tokens:", response.usage_metadata.prompt_token_count)
+            print("Response tokens:", response.usage_metadata.candidates_token_count)
 
 
 
