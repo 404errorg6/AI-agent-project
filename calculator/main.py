@@ -6,6 +6,10 @@ from pkg.render import render
 
 
 def main():
+    """
+    Main function to evaluate a mathematical expression provided as a command line argument.
+    It uses Calculator class for evaluation and render function for formatting output.
+    """
     calculator = Calculator()
     if len(sys.argv) <= 1:
         print("Calculator App")

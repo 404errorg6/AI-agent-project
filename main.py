@@ -9,6 +9,7 @@ from functions.get_file_content import get_file_content
 from functions.get_files_info import get_files_info
 from functions.run_python import run_python_file
 from functions.write_file import write_file
+from functions.tmp_dir import create_temp_dir, del_temp
 
 def verbose_checker():
     try:
@@ -36,9 +37,10 @@ def main():
         types.Content(role="user", parts=[types.Part(text=user_prompt)])
     ]
 
-
+    create_temp_dir()
     generate_content(client, messages, verbose_checker())
-
+    del_temp()
+    
 def generate_content(client, messages, verbose):
     i = 0
     while i < 20:
