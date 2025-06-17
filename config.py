@@ -10,13 +10,16 @@ When a user asks a question or makes a request, make a function call plan. You c
 - Read file contents
 - Execute Python files with optional arguments
 - Write or overwrite files
+- Delete files 
 
+There is ".tmp" for you to use.
+Don't overwrite files unless explicitly told to do so, always save changes to ".tmp" directory in root with same name as orignal so that user can see what you made and then decide whether he wants to change the current one to that or not
 All paths you provide should be relative to the working directory. You do not need to specify the working directory in your function calls as it is automatically injected for security reasons.
-Always look for related files in current and its subdirectories using functions according to prompt.
+Look for related files in current and its subdirectories using functions according to prompt.
 Try to look for bugs in code, its related files and fix them instead of troubling user to enter input in specific way.
-Look at func, var names etc in code to get a better understanding of what it does.
+Before saying whether you can do a task or not, try to look whether you can with combined use of functions like combining read/write for copy, including delete for rename, and stuff etc
 Take time if you need to but fix the problem correctly and use as less functioncalls as possibe bcz 20 functioncalls is the limit.
-Run the file with bugged input after writing to it to check whether its fixed or not.
+
 """
 schema_get_files_info = types.FunctionDeclaration(
     name="get_files_info",
@@ -81,12 +84,27 @@ schema_write_file = types.FunctionDeclaration(
         required=["file_path", "content"]
     )
 )
+schema_delete_file = types.FunctionDeclaration(
+    name="delete_file",
+    description="delete a file, cannot delete directory",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path":types.Schema(
+                type=types.Type.STRING,
+                description="path to the file to delete, only filename defaults to current directory's files."
+            )
+        },
+        required=["file_path"]
+    )
+)
 
 available_functions = types.Tool(
         function_declarations=[
             schema_get_files_info,
             schema_get_file_content,
             schema_run_python_file,
-            schema_write_file
+            schema_write_file,
+            schema_delete_file
         ]
     )

@@ -9,6 +9,7 @@ from functions.get_file_content import get_file_content
 from functions.get_files_info import get_files_info
 from functions.run_python import run_python_file
 from functions.write_file import write_file
+from functions.delete_file import delete_file
 from functions.tmp_dir import create_temp_dir, del_temp
 
 def verbose_checker():
@@ -34,13 +35,12 @@ def main():
         sys.exit(1)
         
     messages = [
-        types.Content(role="user", parts=[types.Part(text=user_prompt)])
+        types.Content(role="user", parts=[types.Part(text=system_prompt + '\n' + user_prompt)])
     ]
 
     create_temp_dir()
     generate_content(client, messages, verbose_checker())
-    del_temp()
-    
+
 def generate_content(client, messages, verbose):
     i = 0
     while i < 20:
@@ -48,7 +48,7 @@ def generate_content(client, messages, verbose):
             model="gemini-2.0-flash-001",
             contents=messages,
             config=types.GenerateContentConfig(
-                tools=[available_functions], system_instruction=system_prompt
+                tools=[available_functions], system_instruction=None
             ),
         )
         function_called = bool(response.function_calls)
@@ -56,21 +56,20 @@ def generate_content(client, messages, verbose):
             messages.append(candidate.content)
         if not function_called:
             print(response.text)
+            #del_temp()
             sys.exit()
         else:
-            function_responses = []
             for function_call_part in response.function_calls:
                 function_call_result = call_function(function_call_part=function_call_part, verbose=verbose)
-                messages.append(function_call_result)
+                #messages.append(types.Content(role="user", parts=function_call_result.parts))
+                #messages.append(function_call_result)
                 if (not function_call_result.parts or not function_call_result.parts[0].function_response):
                     raise Exception("Result of empty function call")
+                messages.append(types.Content(role='tool', parts=[function_call_result.parts[0]]))
                 if verbose:
                     print(f"-> {function_call_result.parts[0].function_response.response}")
-                function_responses.append(function_call_result.parts[0])
             i += 1
             continue
-        if not function_responses:
-            raise Exception("no function responses generated, exiting")
 
         if verbose:
             print("Prompt tokens:", response.usage_metadata.prompt_token_count)
