@@ -10,6 +10,8 @@ from functions.get_files_info import get_files_info
 from functions.run_python import run_python_file
 from functions.write_file import write_file
 from functions.delete_file import delete_file
+from functions.recursive_search import recursive_search
+from functions.find_files import find_files
 from functions.tmp_dir import create_temp_dir, del_temp
 
 def verbose_checker():
@@ -56,13 +58,20 @@ def generate_content(client, messages, verbose):
             messages.append(candidate.content)
         if not function_called:
             print(response.text)
-            #del_temp()
-            sys.exit()
+            loop_check = input('Enter prompt to continue or "exit" to exit: ')
+            if loop_check == "exit":
+                final_check = input('Do you want to delete the ".tmp" directory?(y/n): ')
+                if final_check.lower() == "y":
+                    del_temp()
+                sys.exit()
+            else:
+                messages.append(loop_check)
+                i = 0
+                continue
+            
         else:
             for function_call_part in response.function_calls:
                 function_call_result = call_function(function_call_part=function_call_part, verbose=verbose)
-                #messages.append(types.Content(role="user", parts=function_call_result.parts))
-                #messages.append(function_call_result)
                 if (not function_call_result.parts or not function_call_result.parts[0].function_response):
                     raise Exception("Result of empty function call")
                 messages.append(types.Content(role='tool', parts=[function_call_result.parts[0]]))

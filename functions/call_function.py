@@ -4,6 +4,8 @@ from functions.get_files_info import get_files_info
 from functions.run_python import run_python_file
 from functions.write_file import write_file
 from functions.delete_file import delete_file
+from functions.recursive_search import recursive_search
+from functions.find_files import find_files
 from google.genai import types
 
 
@@ -14,7 +16,9 @@ def call_function(function_call_part, verbose=False):
         "get_file_content" : get_file_content,
         "get_files_info" : get_files_info,
         "write_file" : write_file,
-        "delete_file" : delete_file
+        "delete_file" : delete_file,
+        "recursive_search" : recursive_search,
+        "find_files" : find_files
     }
     function_name = function_call_part.name
     if verbose:
