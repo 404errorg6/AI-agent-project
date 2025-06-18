@@ -13,15 +13,13 @@ from functions.delete_file import delete_file
 from functions.recursive_search import recursive_search
 from functions.find_files import find_files
 from functions.mkdir_rmdir import create_dir, del_dir
+from functions.main_get_dir import get_dir
+from functions.main_verbose_checker import verbose_checker
 
-def verbose_checker():
-    try:
-          return "--verbose" in sys.argv
-    except IndexError:
-         return 0
-            
+working_directory = get_dir()
+
 def main():
-        
+            
     load_dotenv()
     api_key = os.environ.get("GEMINI_API_KEY")
     
@@ -32,7 +30,8 @@ def main():
         user_prompt = sys.argv[1]
     except:
         print("AI Code Assistant")
-        print('\nUsage: python main.py "your prompt here" [--verbose]')
+        print('\nUsage: python main.py "your prompt here" [--verbose] [-d] <directory_path>')
+
         print('Example: python main.py "How do I fix the calculator?"')
         sys.exit(1)
         
@@ -43,7 +42,7 @@ def main():
     create_dir(".tmp", os.getcwd())
     try:
         generate_content(client, messages, verbose_checker())
-    except Exception as e:
+    except Exception as e: #Exit with error handling
         print(f'Error: {e}')
         print("Exiting...")
         final_check = input('Do you want to delete the ".tmp" directory?(y/n): ')
@@ -80,7 +79,7 @@ def generate_content(client, messages, verbose):
         else:
             tool_responses = []
             for function_call_part in response.function_calls:
-                function_call_result = call_function(function_call_part=function_call_part, verbose=verbose)
+                function_call_result = call_function(function_call_part=function_call_part, working_directory=working_directory, verbose=verbose)
                 if (not function_call_result.parts or not function_call_result.parts[0].function_response):
                     raise Exception("Result of empty function call")
                 tool_responses.append(

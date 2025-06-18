@@ -11,7 +11,7 @@ from google.genai import types
 
 
 
-def call_function(function_call_part, verbose=False):
+def call_function(function_call_part, working_directory, verbose=False):
     funcs = {
         "run_python_file" : run_python_file,
         "get_file_content" : get_file_content,
@@ -33,7 +33,7 @@ def call_function(function_call_part, verbose=False):
         # Remove working_directory from args to avoid duplicate argument error
         args = function_call_part.args.copy()
         args.pop('working_directory', None)
-        function_result = funcs[function_name](working_directory=os.getcwd(), **args)
+        function_result = funcs[function_name](working_directory=working_directory, **args)
         return types.Content(
             role="model",
             parts=[

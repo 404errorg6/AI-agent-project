@@ -1,7 +1,8 @@
+from functions.main_get_dir import get_dir
 from google.genai import types
 
 MAX_CHARS = 10000
-system_prompt = system_prompt = """
+system_prompt = f"""
 You are a helpful AI coding agent.
 
 When a user asks a question or makes a request, make a function call plan. You can perform the following operations:
@@ -27,6 +28,8 @@ Use recursive search fucntion whenever it seems fit to minimize functioncalls.
 Never run main.py in root.
 Delete the files/directories you created the user doesn't care about like the test files.
 If user asks for a directory that doesn't exist tell the user it doesn't exist and create such directory and then do the rest of the task
+Don't reply to this
+The root directory and working directory are same that is "{get_dir()}".
 """
 schema_get_files_info = types.FunctionDeclaration(
     name="get_files_info",
