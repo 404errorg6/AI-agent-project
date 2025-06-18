@@ -12,7 +12,7 @@ from functions.write_file import write_file
 from functions.delete_file import delete_file
 from functions.recursive_search import recursive_search
 from functions.find_files import find_files
-from functions.tmp_dir import create_temp_dir, del_temp
+from functions.mkdir_rmdir import create_dir, del_dir
 
 def verbose_checker():
     try:
@@ -40,9 +40,17 @@ def main():
         types.Content(role="user", parts=[types.Part(text=system_prompt + '\n' + user_prompt)])
     ]
 
-    create_temp_dir()
-    generate_content(client, messages, verbose_checker())
-
+    create_dir(".tmp", os.getcwd())
+    try:
+        generate_content(client, messages, verbose_checker())
+    except Exception as e:
+        print(f'Error: {e}')
+        print("Exiting...")
+        final_check = input('Do you want to delete the ".tmp" directory?(y/n): ')
+        if final_check.lower() == "y":
+            del_dir(".tmp", os.getcwd())
+        sys.exit()
+        
 def generate_content(client, messages, verbose):
     i = 0
     while i < 20:
@@ -62,21 +70,25 @@ def generate_content(client, messages, verbose):
             if loop_check == "exit":
                 final_check = input('Do you want to delete the ".tmp" directory?(y/n): ')
                 if final_check.lower() == "y":
-                    del_temp()
+                    del_dir(".tmp", os.getcwd())
                 sys.exit()
             else:
-                messages.append(loop_check)
+                messages.append(types.Content(role="user", parts=[types.Part(text=loop_check)]))
                 i = 0
                 continue
             
         else:
+            tool_responses = []
             for function_call_part in response.function_calls:
                 function_call_result = call_function(function_call_part=function_call_part, verbose=verbose)
                 if (not function_call_result.parts or not function_call_result.parts[0].function_response):
                     raise Exception("Result of empty function call")
-                messages.append(types.Content(role='tool', parts=[function_call_result.parts[0]]))
+                tool_responses.append(
+                    types.Content(role="tools", parts=[function_call_result.parts[0]])
+                )
                 if verbose:
-                    print(f"-> {function_call_result.parts[0].function_response.response}")
+                    print(f"->{function_call_result.parts[0].function_response.response}")
+            messages.extend(tool_responses)
             i += 1
             continue
 
@@ -88,4 +100,3 @@ def generate_content(client, messages, verbose):
 
 if __name__ == "__main__":
     main()
-

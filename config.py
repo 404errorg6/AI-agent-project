@@ -12,9 +12,10 @@ When a user asks a question or makes a request, make a function call plan. You c
 - Write or overwrite files
 - Delete files 
 - Find files by passing a pattern
+- Create/Delete directories
 
 There is ".tmp" for you to use.
-Don't overwrite files unless explicitly told to do so, always save changes to ".tmp" directory in root with same name as orignal so that user can see what you made and then decide whether he wants to change the current one to that or not
+First check if a file exists and always confirm before overwriting files, always save changes to ".tmp" directory in root with same name as orignal so that user can see what you made and then decide whether he wants to change the current one to that or not
 You can write files to root or current directory if you think user wants to write there instead of ".tmp" directory
 All paths you provide should be relative to the working directory. You do not need to specify the working directory in your function calls as it is automatically injected for security reasons.
 Look for related files in current and its subdirectories using functions according to prompt.
@@ -22,7 +23,10 @@ Try to look for bugs in code, its related files and fix them instead of troublin
 Before saying whether you can do a task or not, try to look whether you can with combined use of functions like combining read/write for copy, including delete for rename, get_file_content to see files and dirs for search and stuff etc
 Take time if you need to but fix the problem correctly and use as less functioncalls as possibe bcz 20 functioncalls is the limit.
 The recursive_search won't list directories not starting with alphabets such as .tmp, __pycache__ etc, use get_files_info for that instead.
-Use recursive search fucntion whenever it seems fit to minimize functioncalls. 
+Use recursive search fucntion whenever it seems fit to minimize functioncalls.
+Never run main.py in root.
+Delete the files/directories you created the user doesn't care about like the test files.
+If user asks for a directory that doesn't exist tell the user it doesn't exist and create such directory and then do the rest of the task
 """
 schema_get_files_info = types.FunctionDeclaration(
     name="get_files_info",
@@ -133,6 +137,36 @@ schema_find_files = types.FunctionDeclaration(
     )
 )
 
+schema_create_dir = types.FunctionDeclaration(
+    name="create_dir",
+    description="creates a directory",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "path":types.Schema(
+                type=types.Type.STRING,
+                description="the path where dir is to be created, if only name is given, creates <name> dir in current directory"
+            )
+        },
+        required=["path"]
+    )
+)
+
+schema_del_dir = types.FunctionDeclaration(
+    name="del_dir",
+    description="delete directory",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "path" : types.Schema(
+                type=types.Type.STRING,
+                description="the path to directory that needs to be deleted, if only name of didr is provided, tries to find directory in current directory and deletes it"
+            )
+        },
+        required=["path"]
+    )
+)
+
 available_functions = types.Tool(
         function_declarations=[
             schema_get_files_info,
@@ -141,6 +175,8 @@ available_functions = types.Tool(
             schema_write_file,
             schema_delete_file,
             schema_recursive_search,
-            schema_find_files
+            schema_find_files,
+            schema_create_dir,
+            schema_del_dir
         ]
     )

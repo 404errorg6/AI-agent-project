@@ -6,6 +6,7 @@ from functions.write_file import write_file
 from functions.delete_file import delete_file
 from functions.recursive_search import recursive_search
 from functions.find_files import find_files
+from functions.mkdir_rmdir import create_dir, del_dir
 from google.genai import types
 
 
@@ -18,7 +19,9 @@ def call_function(function_call_part, verbose=False):
         "write_file" : write_file,
         "delete_file" : delete_file,
         "recursive_search" : recursive_search,
-        "find_files" : find_files
+        "find_files" : find_files,
+        "del_dir" : del_dir,
+        "create_dir" : create_dir
     }
     function_name = function_call_part.name
     if verbose:
